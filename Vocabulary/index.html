@@ -1,0 +1,2207 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Vocabulary Web — Game Menu Overlay + Intro</title>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Scheherazade+New&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --light: #ffffff;
+        --soft: #f8f8f8;
+        --bg-dark: #000000;
+        --intro-text: #e5e5e5;
+
+        --bg: #0f1724;
+        --card: #1e293b;
+        --muted: #9aa4b2;
+        --accent: #60a5fa;
+        --hover: #3b82f6;
+
+        --panel-glow: rgba(96, 165, 250, 0.08);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI,
+          Roboto, "Helvetica Neue", Arial;
+        color: #e6eef6;
+        -webkit-font-smoothing: antialiased;
+      }
+      body {
+        background: var(--bg);
+        overflow: hidden;
+        transition: background 0.9s ease;
+      }
+
+      /* INTRO */
+      #introOverlay {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        background: var(--bg-dark);
+        z-index: 10000;
+        opacity: 1;
+        transition: opacity 1s ease, background 1s ease, visibility 1s;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .intro-glow {
+        width: 140px;
+        height: 140px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          rgba(255, 255, 255, 1) 0%,
+          rgba(248, 248, 248, 0.96) 55%,
+          rgba(248, 248, 248, 0.25) 75%,
+          transparent 100%
+        );
+        filter: blur(10px);
+        animation: introPulse 3s ease-in-out infinite;
+        will-change: transform, opacity;
+        box-shadow: 0 12px 40px rgba(96, 165, 250, 0.08);
+      }
+      @keyframes introPulse {
+        0% {
+          transform: scale(1);
+          opacity: 0.95;
+        }
+        50% {
+          transform: scale(1.03);
+          opacity: 1;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 0.95;
+        }
+      }
+      .intro-text {
+        color: var(--intro-text);
+        margin-top: 20px;
+        font-size: 1.35rem;
+        font-family: "Scheherazade New", serif;
+        letter-spacing: 0.6px;
+        direction: rtl;
+        user-select: none;
+        opacity: 0.98;
+      }
+      .intro-hint {
+        margin-top: 14px;
+        font-size: 0.92rem;
+        color: rgba(255, 255, 255, 0.66);
+      }
+      #continueIntroBtn {
+        padding: 10px 18px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 700;
+        background: var(--accent);
+        color: #fff;
+        font-size: 0.95rem;
+        box-shadow: 0 6px 18px rgba(96, 165, 250, 0.14);
+      }
+      #continueIntroBtn:focus {
+        outline: 2px solid rgba(96, 165, 250, 0.18);
+        outline-offset: 3px;
+      }
+
+      /* header + floating menu button */
+      header {
+        width: 100%;
+        background: var(--card);
+        padding: 12px 20px;
+        display: flex;
+        gap: 12px;
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.6);
+        position: sticky;
+        top: 0;
+        z-index: 40;
+        align-items: center;
+        border-bottom: 2px solid var(--accent);
+      }
+      header a {
+        color: var(--muted);
+        text-decoration: none;
+        padding: 6px 10px;
+        border-radius: 6px;
+        transition: 0.22s;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      header a:hover {
+        color: #fff;
+        background: rgba(96, 165, 250, 0.12);
+      }
+
+      .floating-menu-btn {
+        margin-left: auto;
+        position: relative;
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        border: none;
+        cursor: pointer;
+        background: linear-gradient(180deg, var(--accent), #22d3ee);
+        color: #fff;
+        font-weight: 800;
+        font-size: 20px;
+        box-shadow: 0 8px 28px rgba(2, 6, 23, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .floating-menu-btn:focus {
+        outline: 2px solid rgba(96, 165, 250, 0.18);
+        outline-offset: 3px;
+      }
+
+      .container {
+        display: block;
+        height: calc(100vh - 56px);
+        transition: 0.25s;
+      }
+      main.main {
+        overflow-y: auto;
+        padding: 28px;
+        min-height: 100vh;
+        background: var(--bg);
+      }
+      h1 {
+        margin: 0 0 14px 0;
+        font-size: 28px;
+        text-shadow: 0 0 6px var(--accent);
+      }
+
+      .content {
+        display: none;
+        animation: fadeIn 0.28s ease both;
+      }
+      .content.active {
+        display: block;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* overlay menu (full-screen) */
+      #menuOverlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(2, 6, 23, 0.88);
+        z-index: 9999;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 28px;
+        overflow: auto;
+      }
+      .menu-inner {
+        width: 100%;
+        max-width: 980px;
+        color: #fff;
+        display: flex;
+        gap: 18px;
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .menu-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .menu-header h2 {
+        margin: 0;
+        font-size: 1.3rem;
+        font-weight: 800;
+        letter-spacing: 0.2px;
+      }
+
+      /* unified glowing blue for both buttons */
+      .menu-close {
+        background: linear-gradient(135deg, #60a5fa, #22d3ee);
+        color: #fff;
+        border: 1px solid rgba(96, 165, 250, 0.9);
+        padding: 8px 12px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 700;
+        box-shadow: 0 8px 22px rgba(96, 165, 250, 0.12);
+        transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+      }
+      .menu-close:hover,
+      .menu-close:focus {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 10px 30px rgba(96, 165, 250, 0.18);
+        border-color: #60a5fa;
+        outline: none;
+      }
+
+      .lang-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 12px;
+        margin-top: 12px;
+      }
+      .lang-card {
+        padding: 16px;
+        border-radius: 12px;
+        background: linear-gradient(145deg, #0f1724, #1e293b);
+        text-align: center;
+        cursor: pointer;
+        user-select: none;
+        box-shadow: 0 6px 20px rgba(2, 6, 23, 0.6);
+        transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+        border: 2px solid rgba(255, 255, 255, 0.03);
+      }
+      .lang-card:hover {
+        transform: translateY(-6px);
+      }
+      .lang-card.active {
+        border-color: rgba(96, 165, 250, 0.9);
+        box-shadow: 0 10px 30px rgba(96, 165, 250, 0.12);
+        transform: translateY(-6px) scale(1.02);
+      }
+
+      .cat-grid {
+        display: flex;
+        gap: 10px;
+        margin-top: 12px;
+        flex-wrap: wrap;
+      }
+      .cat-card {
+        padding: 10px 14px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.03);
+        cursor: pointer;
+        font-weight: 700;
+        border: 1px solid rgba(255, 255, 255, 0.04);
+      }
+      .cat-card:hover {
+        transform: translateY(-4px);
+      }
+      .cat-card.active {
+        background: linear-gradient(135deg, #60a5fa, #22d3ee);
+        color: #05203a;
+        box-shadow: 0 8px 22px rgba(96, 165, 250, 0.12);
+      }
+
+      /* --- HOME DASHBOARD LAYOUT --- */
+      .home-dashboard {
+        position: relative;
+        min-height: 70vh;
+        display: block;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.02),
+          transparent
+        );
+        border-radius: 16px;
+        padding: 28px;
+        box-shadow: 0 8px 30px rgba(2, 6, 23, 0.6);
+        overflow: hidden;
+      }
+
+      /* small floating energy particles */
+      .particle {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        opacity: 0.06;
+        background: var(--accent);
+        pointer-events: none;
+        transform: translate3d(0, 0, 0);
+        animation: floatUp 8s linear infinite;
+      }
+      @keyframes floatUp {
+        from {
+          transform: translateY(10vh) scale(0.6);
+          opacity: 0.06;
+        }
+        50% {
+          transform: translateY(-10vh) scale(1.1);
+          opacity: 0.12;
+        }
+        to {
+          transform: translateY(10vh) scale(0.8);
+          opacity: 0.06;
+        }
+      }
+
+      /* Corners & center panels */
+      .corner-panel {
+        position: absolute;
+        background: linear-gradient(
+          145deg,
+          rgba(255, 255, 255, 0.02),
+          rgba(255, 255, 255, 0.01)
+        );
+        border-radius: 12px;
+        padding: 10px 14px;
+        min-width: 160px;
+        max-width: 38%;
+        box-shadow: 0 6px 22px rgba(2, 6, 23, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.03);
+      }
+
+      .top-left {
+        top: 18px;
+        left: 18px;
+      }
+      .top-right {
+        top: 18px;
+        right: 18px;
+        text-align: right;
+      }
+      .bottom-left {
+        bottom: 18px;
+        left: 18px;
+      }
+      .bottom-right {
+        bottom: 18px;
+        right: 18px;
+      }
+
+      .center-panel {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 68%;
+        max-width: 860px;
+        padding: 28px;
+        text-align: center;
+        border-radius: 14px;
+        background: linear-gradient(
+          135deg,
+          rgba(96, 165, 250, 0.06),
+          rgba(34, 211, 238, 0.03)
+        );
+        box-shadow: 0 12px 40px var(--panel-glow);
+        border: 1px solid rgba(96, 165, 250, 0.07);
+      }
+
+      .date-text {
+        font-weight: 800;
+        font-size: 1rem;
+        color: #e6eef6;
+      }
+      .small-muted {
+        font-size: 0.86rem;
+        color: var(--muted);
+        margin-top: 6px;
+      }
+
+      .quote-text {
+        font-style: italic;
+        font-weight: 700;
+        font-size: 0.97rem;
+        color: #eaf3ff;
+        max-width: 420px;
+      }
+      .quote-author {
+        display: block;
+        font-size: 0.78rem;
+        color: var(--muted);
+        margin-top: 6px;
+      }
+
+      .faith-strong {
+        font-family: "Scheherazade New", serif;
+        font-size: 1.55rem;
+        font-weight: 700;
+        color: #ffffff;
+        line-height: 1.2;
+      }
+      .faith-sub {
+        font-size: 0.95rem;
+        color: var(--soft);
+        margin-top: 8px;
+      }
+
+      .streak-num {
+        font-weight: 900;
+        font-size: 1.4rem;
+      }
+      .streak-meta {
+        font-size: 0.86rem;
+        color: var(--muted);
+        margin-top: 6px;
+      }
+
+      .micro-hint {
+        font-size: 0.9rem;
+        color: var(--muted);
+        margin-top: 6px;
+      }
+
+      .small-btn {
+        padding: 8px 10px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--accent), #22d3ee);
+        color: #05203a;
+      }
+      .ghost-btn {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        color: var(--muted);
+      }
+
+      /* vocab UI (kept similar to your original) */
+      .vocab-subbar {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+        padding: 8px 10px;
+        background: var(--card);
+        border-radius: 8px;
+        position: sticky;
+        top: 56px;
+        z-index: 30;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+      }
+      .vocab-subbar button {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        color: var(--muted);
+        padding: 8px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 700;
+      }
+      .vocab-subbar button.active {
+        border-color: var(--accent);
+        color: #fff;
+        background: linear-gradient(135deg, #60a5fa, #22d3ee);
+        box-shadow: 0 0 12px #60a5fa;
+      }
+
+      .nested-wrap {
+        display: none;
+        margin-bottom: 8px;
+      }
+      .nested-subbar {
+        display: flex;
+        gap: 8px;
+        padding: 6px 8px;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 8px;
+      }
+      .nested-subbar button {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        padding: 6px 10px;
+        color: var(--muted);
+        border-radius: 6px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .nested-subbar button.active {
+        border-color: var(--accent);
+        color: #fff;
+        background: linear-gradient(135deg, #60a5fa, #22d3ee);
+      }
+
+      .vocab-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 14px;
+        margin-top: 16px;
+      }
+      .flip-card {
+        perspective: 1000px;
+        cursor: pointer;
+      }
+      .flip-card-inner {
+        position: relative;
+        width: 100%;
+        height: 180px;
+        text-align: center;
+        transition: transform 0.52s;
+        transform-style: preserve-3d;
+      }
+      .flip-card:hover .flip-card-inner {
+        transform: rotateY(180deg);
+      }
+      .flip-card-front,
+      .flip-card-back {
+        position: absolute;
+        inset: 0;
+        backface-visibility: hidden;
+        border-radius: 12px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 12px;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+        border: 2px solid rgba(255, 255, 255, 0.04);
+        background: linear-gradient(145deg, #334155, #1e293b);
+        color: #e6eef6;
+      }
+      .flip-card-back {
+        transform: rotateY(180deg);
+        background: linear-gradient(135deg, #60a5fa, #22d3ee);
+        color: #fff;
+      }
+      .flip-card img {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-bottom: 8px;
+      }
+      .transliteration {
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 3px;
+      }
+      .meaning {
+        font-size: 12px;
+        color: #e6eef6;
+        margin-bottom: 4px;
+      }
+      .example {
+        font-size: 11px;
+        margin-bottom: 2px;
+      }
+      .pronunciation {
+        font-size: 10px;
+        color: #e6eef6;
+      }
+
+      .empty-hint {
+        padding: 18px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.02);
+        color: var(--muted);
+        text-align: center;
+        font-weight: 600;
+        margin-top: 10px;
+      }
+
+      /* responsive tweaks */
+      @media (max-width: 900px) {
+        .center-panel {
+          width: 92%;
+          padding: 20px;
+        }
+        .top-left,
+        .top-right,
+        .bottom-left,
+        .bottom-right {
+          min-width: 130px;
+          max-width: 46%;
+        }
+        .quote-text {
+          max-width: 260px;
+        }
+        .vocab-grid {
+          grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        }
+      }
+      @media (max-width: 520px) {
+        .center-panel {
+          width: 95%;
+        }
+        .top-left,
+        .top-right {
+          display: block;
+          position: static;
+          margin-bottom: 12px;
+        }
+        .bottom-left,
+        .bottom-right {
+          display: block;
+          position: static;
+          margin-top: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- INTRO OVERLAY -->
+    <div id="introOverlay" aria-hidden="false">
+      <div
+        class="intro-glow"
+        id="introCircle"
+        role="img"
+        aria-label="glow"
+      ></div>
+      <div class="intro-text">بسم الله، نبدأ بنورٍ من الله</div>
+      <div class="intro-hint">
+        <button id="continueIntroBtn" aria-label="Continue">
+          Tap to Continue
+        </button>
+      </div>
+    </div>
+
+    <!-- MENU OVERLAY (languages + categories) -->
+    <div id="menuOverlay" aria-hidden="true">
+      <div class="menu-inner" role="dialog" aria-modal="true" aria-label="Menu">
+        <div class="menu-header">
+          <h2>Choose Language & Category</h2>
+          <div>
+            <button id="menuClear" class="menu-close" title="Reset">
+              Reset
+            </button>
+            <button id="menuClose" class="menu-close" title="Close">
+              Close
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <div style="opacity: 0.9; font-weight: 700">Languages</div>
+          <div class="lang-grid" id="langGrid" aria-label="Languages">
+            <!-- language cards injected from JS -->
+          </div>
+        </div>
+
+        <div>
+          <div style="opacity: 0.9; font-weight: 700; margin-top: 8px">
+            Categories
+          </div>
+          <div class="cat-grid" id="catGrid" aria-label="Categories">
+            <!-- category cards injected from JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- APP -->
+    <header>
+      <a data-target="home">Home</a>
+      <a data-target="vocabulary">Vocabulary</a>
+      <button
+        id="openMenuBtn"
+        class="floating-menu-btn"
+        aria-haspopup="dialog"
+        aria-controls="menuOverlay"
+        title="Open menu"
+      >
+        ☰
+      </button>
+    </header>
+
+    <div class="container" id="appContainer">
+      <main class="main">
+        <!-- HOME -->
+        <section id="home" class="content active">
+          <div class="home-dashboard" id="homeDashboard" aria-live="polite">
+            <!-- particles (generated by JS) -->
+
+            <!-- Date (top-left) -->
+            <div
+              class="corner-panel top-left"
+              id="datePanel"
+              role="region"
+              aria-label="Date"
+            >
+              <div class="date-text" id="dateText">Loading date...</div>
+              <div class="small-muted">Today</div>
+            </div>
+
+            <!-- Quote (top-right) -->
+            <div
+              class="corner-panel top-right"
+              id="quotePanel"
+              role="region"
+              aria-label="Quote of the day"
+            >
+              <div class="quote-text" id="quoteText">
+                “Knowledge without action is like a tree without fruit.”
+              </div>
+              <div class="quote-author" id="quoteAuthor">
+                — Ibn Majah (adapted)
+              </div>
+            </div>
+
+            <!-- Faith reminder (center) -->
+            <div
+              class="center-panel"
+              id="faithPanel"
+              role="region"
+              aria-label="Faith reminder"
+            >
+              <div class="faith-strong" id="faithMain">
+                يَا أَيُّهَا الَّذِينَ آمَنُوا تَقَوْا اللَّهَ
+              </div>
+              <div class="faith-sub" id="faithSub">
+                Remember your purpose — a small sincere act today beats grand
+                plans postponed.
+              </div>
+              <div
+                style="
+                  margin-top: 14px;
+                  display: flex;
+                  gap: 10px;
+                  justify-content: center;
+                  align-items: center;
+                "
+              >
+                <button
+                  id="listenDuaBtn"
+                  class="small-btn"
+                  title="Mark a quick dua as done"
+                >
+                  Mark Dua
+                </button>
+                <button
+                  id="nextFaithBtn"
+                  class="ghost-btn small-btn"
+                  title="Show another reminder"
+                >
+                  Another
+                </button>
+              </div>
+            </div>
+
+            <!-- Progress stats / streak (bottom-right) -->
+            <div
+              class="corner-panel bottom-right"
+              id="progressPanel"
+              role="region"
+              aria-label="Progress stats"
+            >
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+              >
+                <div>
+                  <div class="streak-num" id="streakCount">0</div>
+                  <div class="streak-meta" id="streakMeta">
+                    current streak (days)
+                  </div>
+                </div>
+                <div style="text-align: right">
+                  <div style="font-weight: 800; font-size: 0.95rem">XP</div>
+                  <div class="small-muted" id="xpCount">0</div>
+                </div>
+              </div>
+              <div
+                style="
+                  margin-top: 10px;
+                  display: flex;
+                  gap: 8px;
+                  justify-content: flex-end;
+                "
+              >
+                <button id="addProgressBtn" class="small-btn">+1</button>
+                <button id="resetProgressBtn" class="ghost-btn small-btn">
+                  Reset
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <h1 style="margin-top: 24px">Welcome</h1>
+          <p>
+            Open the menu (top-right) to choose a language and category. The
+            interface is calm, professional, and game-like—no sidebar.
+          </p>
+        </section>
+
+        <!-- VOCABULARY -->
+        <section id="vocabulary" class="content" aria-live="polite">
+          <h1>Vocabulary</h1>
+
+          <!-- main subbar -->
+          <div class="vocab-subbar" id="mainSubbar">
+            <button data-vocab="functional" class="active">Functional</button>
+            <button data-vocab="thematic">Thematic</button>
+            <button data-vocab="basic">Basic</button>
+            <button data-vocab="formal">Formal</button>
+          </div>
+
+          <!-- NESTED: Functional -->
+          <div id="functionalNestedWrap" class="nested-wrap">
+            <div class="nested-subbar" data-parent="functional">
+              <button data-sub="prepositions" class="active">
+                Prepositions
+              </button>
+              <button data-sub="conjunctions">Conjunctions</button>
+              <button data-sub="pronouns">Pronouns</button>
+              <button data-sub="auxiliary-verbs">Auxiliary Verbs</button>
+              <button data-sub="connectors">Connectors</button>
+              <button data-sub="determiners">Determiners</button>
+              <button data-sub="frequency">Frequency</button>
+              <button data-sub="question-words">Question Words</button>
+            </div>
+          </div>
+
+          <!-- NESTED: Thematic -->
+          <div id="thematicNestedWrap" class="nested-wrap">
+            <div class="nested-subbar" data-parent="thematic">
+              <button data-sub="home-daily" class="active">
+                Home & Daily Life
+              </button>
+              <button data-sub="education">Education</button>
+              <button data-sub="food-drinks">Food & Drinks</button>
+              <button data-sub="transportation">Transportation</button>
+              <button data-sub="places">Places</button>
+              <button data-sub="emotions">Emotions</button>
+              <button data-sub="health-body">Health & Body</button>
+              <button data-sub="shopping">Shopping</button>
+              <button data-sub="nature">Nature</button>
+              <button data-sub="travel">Travel</button>
+            </div>
+          </div>
+
+          <!-- NESTED: Basic -->
+          <div id="basicNestedWrap" class="nested-wrap">
+            <div class="nested-subbar" data-parent="basic">
+              <button data-sub="greetings" class="active">Greetings</button>
+              <button data-sub="days">Days</button>
+              <button data-sub="months">Months</button>
+              <button data-sub="time-expressions">Time expressions</button>
+              <button data-sub="numbers">Numbers</button>
+              <button data-sub="colors">Colors</button>
+              <button data-sub="family-people">Family & People</button>
+              <button data-sub="fruits-vegetables">Fruits & Vegetables</button>
+              <button data-sub="objects">Objects</button>
+              <button data-sub="verbs">Verbs</button>
+              <button data-sub="adjectives">Adjectives</button>
+              <button data-sub="places">Places</button>
+            </div>
+          </div>
+
+          <!-- GRIDS -->
+          <div
+            id="functional-prepositions"
+            class="vocab-grid"
+            style="display: none"
+          ></div>
+          <div
+            id="functional-conjunctions"
+            class="vocab-grid"
+            style="display: none"
+          ></div>
+          <div
+            id="functional-pronouns"
+            class="vocab-grid"
+            style="display: none"
+          ></div>
+          <div
+            id="functional-auxiliary-verbs"
+            class="vocab-grid"
+            style="display: none"
+          ></div>
+          <div
+            id="functional-connectors"
+            class="vocab-grid"
+            style="display: none"
+          ></div>
+          <div
+            id="functional-determiners"
+            class="vocab-grid"
+            style="display: none"
+          ></div>
+          <div
+            id="functional-frequency"
+            class="vocab-grid"
+            style="display: none"
+          ></div>
+          <div
+            id="functional-question-words"
+            class="vocab-grid"
+            style="display: none"
+          ></div>
+
+          <div
+            id="thematic-home-daily"
+            class="vocab-grid"
+            style="display: none"
+          ></div>
+          <div
+            id="thematic-education"
+            class="vocab-grid"
+            style="display: none"
+          ></div>
+          <div
+            id="thematic-food-drinks"
+            class="vocab-grid"
+            style="display: none"
+          ></div>
+          <div
+            id="thematic-transportation"
+            class="vocab-grid"
+            style="display: none"
+          ></div>
+          <div
+            id="thematic-places"
+            class="vocab-grid"
+            style="display: none"
+          ></div>
+          <div
+            id="thematic-emotions"
+            class="vocab-grid"
+            style="display: none"
+          ></div>
+          <div
+            id="thematic-health-body"
+            class="vocab-grid"
+            style="display: none"
+          ></div>
+          <div
+            id="thematic-shopping"
+            class="vocab-grid"
+            style="display: none"
+          ></div>
+          <div
+            id="thematic-nature"
+            class="vocab-grid"
+            style="display: none"
+          ></div>
+          <div
+            id="thematic-travel"
+            class="vocab-grid"
+            style="display: none"
+          ></div>
+
+          <div
+            id="basic-greetings"
+            class="vocab-grid"
+            style="display: none"
+          ></div>
+          <div id="basic-days" class="vocab-grid" style="display: none"></div>
+          <div id="basic-months" class="vocab-grid" style="display: none"></div>
+          <div
+            id="basic-time-expressions"
+            class="vocab-grid"
+            style="display: none"
+          ></div>
+          <div
+            id="basic-numbers"
+            class="vocab-grid"
+            style="display: none"
+          ></div>
+          <div id="basic-colors" class="vocab-grid" style="display: none"></div>
+          <div
+            id="basic-family-people"
+            class="vocab-grid"
+            style="display: none"
+          ></div>
+          <div
+            id="basic-fruits-vegetables"
+            class="vocab-grid"
+            style="display: none"
+          ></div>
+          <div
+            id="basic-objects"
+            class="vocab-grid"
+            style="display: none"
+          ></div>
+          <div id="basic-verbs" class="vocab-grid" style="display: none"></div>
+          <div
+            id="basic-adjectives"
+            class="vocab-grid"
+            style="display: none"
+          ></div>
+          <div id="basic-places" class="vocab-grid" style="display: none"></div>
+
+          <div id="formal" class="vocab-grid" style="display: none"></div>
+
+          <div id="emptyHint" class="empty-hint" style="display: none">
+            No cards for this language in the selected category.
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      /* ---------------------------
+   Data
+----------------------------*/
+      const vocabData = [
+        // TURKISH
+        // Functional
+        {
+          main: "functional",
+          sub: "prepositions",
+          lang: "turkish",
+          img: "https://via.placeholder.com/80",
+          transliteration: "İçinde",
+          meaning: "In",
+          example: "Kitap masanın içinde.",
+          pronunciation: "i-çin-de",
+        },
+        {
+          main: "functional",
+          sub: "conjunctions",
+          lang: "turkish",
+          img: "https://via.placeholder.com/80",
+          transliteration: "Ve",
+          meaning: "And",
+          example: "Ben ve o okula gittik.",
+          pronunciation: "ve",
+        },
+        // Formal
+        {
+          main: "formal",
+          sub: "",
+          lang: "turkish",
+          img: "https://via.placeholder.com/80",
+          transliteration: "Toplantı",
+          meaning: "Meeting",
+          example: "I have a toplantı today.",
+          pronunciation: "top-lan-tı",
+        },
+
+        // Thematic
+
+        // Basic
+
+        {
+          main: "basic",
+          sub: "fruits-vegetables",
+          lang: "turkish",
+          img: "images/fruits/apple.png",
+          transliteration: "Elma",
+          meaning: "Apple",
+          example: "Elma çok tatlı.", // The apple is very sweet.
+          pronunciation: "el-ma",
+        },
+        {
+          main: "basic",
+          sub: "fruits-vegetables",
+          lang: "turkish",
+          img: "images/fruits/banana.png",
+          transliteration: "Muz",
+          meaning: "Banana",
+          example: "Muz çok lezzetli.", // The banana is very tasty.
+          pronunciation: "muz",
+        },
+        {
+          main: "basic",
+          sub: "fruits-vegetables",
+          lang: "turkish",
+          img: "images/fruits/grapes.png",
+          transliteration: "Üzüm",
+          meaning: "Grape",
+          example: "Üzümler sulu ve tatlı.", // The grapes are juicy and sweet.
+          pronunciation: "ü-züm",
+        },
+        {
+          main: "basic",
+          sub: "fruits-vegetables",
+          lang: "turkish",
+          img: "images/fruits/strawberry.png",
+          transliteration: "Çilek",
+          meaning: "Strawberry",
+          example: "Çilekler taze ve kırmızı.", // The strawberries are fresh and red.
+          pronunciation: "çi-lek",
+        },
+        {
+          main: "basic",
+          sub: "fruits-vegetables",
+          lang: "turkish",
+          img: "images/fruits/avocado.png",
+          transliteration: "Avokado",
+          meaning: "Avocado",
+          example: "Avokado sağlıklıdır.", // Avocado is healthy.
+          pronunciation: "a-vo-ka-do",
+        },
+        {
+          main: "basic",
+          sub: "fruits-vegetables",
+          lang: "turkish",
+          img: "images/fruits/blackberry.png",
+          transliteration: "Böğürtlen",
+          meaning: "Blackberry",
+          example: "Böğürtlen tatlıdır.", // The blackberry is sweet.
+          pronunciation: "bö-ğürt-len",
+        },
+        {
+          main: "basic",
+          sub: "fruits-vegetables",
+          lang: "turkish",
+          img: "images/fruits/blueberry.png",
+          transliteration: "Yaban mersini",
+          meaning: "Blueberry",
+          example: "Yaban mersini taze.", // The blueberry is fresh.
+          pronunciation: "ya-ban mer-si-ni",
+        },
+        {
+          main: "basic",
+          sub: "fruits-vegetables",
+          lang: "turkish",
+          img: "images/fruits/cherry.png",
+          transliteration: "Kiraz",
+          meaning: "Cherry",
+          example: "Kirazlar kırmızı ve tatlı.", // Cherries are red and sweet.
+          pronunciation: "ki-raz",
+        },
+        {
+          main: "basic",
+          sub: "fruits-vegetables",
+          lang: "turkish",
+          img: "images/fruits/coconut.png",
+          transliteration: "Hindistancevizi",
+          meaning: "Coconut",
+          example: "Hindistancevizi lezzetli.", // Coconut is tasty.
+          pronunciation: "hin-di-tan-ce-vi-zi",
+        },
+        {
+          main: "basic",
+          sub: "fruits-vegetables",
+          lang: "turkish",
+          img: "images/fruits/dragonfruit.png",
+          transliteration: "Ejder meyvesi",
+          meaning: "Dragonfruit",
+          example: "Ejder meyvesi egzotiktir.", // Dragonfruit is exotic.
+          pronunciation: "ej-der mey-ve-si",
+        },
+        {
+          main: "basic",
+          sub: "fruits-vegetables",
+          lang: "turkish",
+          img: "images/fruits/durian.png",
+          transliteration: "Durian",
+          meaning: "Durian",
+          example: "Durian kokusu güçlüdür.", // Durian has a strong smell.
+          pronunciation: "du-ri-an",
+        },
+        {
+          main: "basic",
+          sub: "fruits-vegetables",
+          lang: "turkish",
+          img: "images/fruits/guava.png",
+          transliteration: "Guava",
+          meaning: "Guava",
+          example: "Guava tatlı ve sulu.", // Guava is sweet and juicy.
+          pronunciation: "gua-va",
+        },
+        {
+          main: "basic",
+          sub: "fruits-vegetables",
+          lang: "turkish",
+          img: "images/fruits/kiwi.png",
+          transliteration: "Kivi",
+          meaning: "Kiwi",
+          example: "Kivi vitaminlidir.", // Kiwi is full of vitamins.
+          pronunciation: "ki-vi",
+        },
+        {
+          main: "basic",
+          sub: "fruits-vegetables",
+          lang: "turkish",
+          img: "images/fruits/lemon.png",
+          transliteration: "Limon",
+          meaning: "Lemon",
+          example: "Limon ekşidir.", // Lemon is sour.
+          pronunciation: "li-mon",
+        },
+        {
+          main: "basic",
+          sub: "fruits-vegetables",
+          lang: "turkish",
+          img: "images/fruits/lychee.png",
+          transliteration: "Liçi",
+          meaning: "Lychee",
+          example: "Liçi tatlıdır.", // Lychee is sweet.
+          pronunciation: "li-çi",
+        },
+        {
+          main: "basic",
+          sub: "fruits-vegetables",
+          lang: "turkish",
+          img: "images/fruits/mango.png",
+          transliteration: "Mango",
+          meaning: "Mango",
+          example: "Mango olgun ve tatlı.", // Mango is ripe and sweet.
+          pronunciation: "man-go",
+        },
+        {
+          main: "basic",
+          sub: "fruits-vegetables",
+          lang: "turkish",
+          img: "images/fruits/orange.png",
+          transliteration: "Portakal",
+          meaning: "Orange",
+          example: "Portakal suyu taze.", // Orange juice is fresh.
+          pronunciation: "por-ta-kal",
+        },
+        {
+          main: "basic",
+          sub: "fruits-vegetables",
+          lang: "turkish",
+          img: "images/fruits/papaya.png",
+          transliteration: "Papaya",
+          meaning: "Papaya",
+          example: "Papaya tatlıdır ve sulu.", // Papaya is sweet and juicy.
+          pronunciation: "pa-pa-ya",
+        },
+        {
+          main: "basic",
+          sub: "fruits-vegetables",
+          lang: "turkish",
+          img: "images/fruits/pineapple.png",
+          transliteration: "Ananas",
+          meaning: "Pineapple",
+          example: "Ananas tropik bir meyvedir.", // Pineapple is a tropical fruit.
+          pronunciation: "a-na-nas",
+        },
+        {
+          main: "basic",
+          sub: "fruits-vegetables",
+          lang: "turkish",
+          img: "images/fruits/raspberry.png",
+          transliteration: "Ahududu",
+          meaning: "Raspberry",
+          example: "Ahududu tatlı ve sulu.", // Raspberry is sweet and juicy.
+          pronunciation: "a-hu-du-du",
+        },
+        {
+          main: "basic",
+          sub: "fruits-vegetables",
+          lang: "turkish",
+          img: "images/fruits/watermelon.png",
+          transliteration: "Karpuz",
+          meaning: "Watermelon",
+          example: "Karpuz yazın çok güzeldir.", // Watermelon is very good in summer.
+          pronunciation: "kar-puz",
+        },
+
+        // ARABIC
+        // Basic
+        {
+          main: "basic",
+          sub: "greetings",
+          lang: "arabic",
+          img: "https://via.placeholder.com/80",
+          transliteration: "Salam",
+          meaning: "Hello",
+          example: "Salam! Kayfa ḥāluka?",
+          pronunciation: "sa-lam",
+        },
+        // Functional
+        {
+          main: "functional",
+          sub: "prepositions",
+          lang: "arabic",
+          img: "https://via.placeholder.com/80",
+          transliteration: "في",
+          meaning: "In",
+          example: "الكتاب في الطاولة.",
+          pronunciation: "fi",
+        },
+
+        // Thematic
+
+        // JAPANESE
+        // Basic
+        {
+          main: "basic",
+          sub: "greetings",
+          lang: "japanese",
+          img: "https://via.placeholder.com/80",
+          transliteration: "Konnichiwa",
+          meaning: "Hello",
+          example: "Konnichiwa! Ogenki desu ka?",
+          pronunciation: "kon-ni-chi-wa",
+        },
+        // Thematic
+        {
+          main: "thematic",
+          sub: "food-drinks",
+          lang: "japanese",
+          img: "https://via.placeholder.com/80",
+          transliteration: "Pan",
+          meaning: "Bread",
+          example: "Pan wa oishii desu.",
+          pronunciation: "pan",
+        },
+
+        // VIETNAMESE
+        // Basic
+        {
+          main: "basic",
+          sub: "greetings",
+          lang: "vietnamese",
+          img: "https://via.placeholder.com/80",
+          transliteration: "Xin chào",
+          meaning: "Hello",
+          example: "Xin chào! Bạn khỏe không?",
+          pronunciation: "sin chao",
+        },
+        // Thematic
+        {
+          main: "thematic",
+          sub: "food-drinks",
+          lang: "vietnamese",
+          img: "https://via.placeholder.com/80",
+          transliteration: "Bánh mì",
+          meaning: "Bread",
+          example: "Bánh mì rất ngon.",
+          pronunciation: "banh-mee",
+        },
+
+        // FRENCH
+        // Basic
+        {
+          main: "basic",
+          sub: "greetings",
+          lang: "french",
+          img: "https://via.placeholder.com/80",
+          transliteration: "Bonjour",
+          meaning: "Hello",
+          example: "Bonjour! Comment ça va?",
+          pronunciation: "bon-zhoor",
+        },
+        // Thematic
+        {
+          main: "thematic",
+          sub: "food-drinks",
+          lang: "french",
+          img: "https://via.placeholder.com/80",
+          transliteration: "Pain",
+          meaning: "Bread",
+          example: "Le pain est chaud.",
+          pronunciation: "pan",
+        },
+
+        // GERMAN
+        // Basic
+        {
+          main: "basic",
+          sub: "greetings",
+          lang: "german",
+          img: "https://via.placeholder.com/80",
+          transliteration: "Guten Tag",
+          meaning: "Hello",
+          example: "Guten Tag! Wie geht es dir?",
+          pronunciation: "goo-ten tahg",
+        },
+        // Thematic
+        {
+          main: "thematic",
+          sub: "food-drinks",
+          lang: "german",
+          img: "https://via.placeholder.com/80",
+          transliteration: "Brot",
+          meaning: "Bread",
+          example: "Das Brot ist frisch.",
+          pronunciation: "brot",
+        },
+
+        // ITALIAN
+        // Basic
+        {
+          main: "basic",
+          sub: "greetings",
+          lang: "italian",
+          img: "https://via.placeholder.com/80",
+          transliteration: "Ciao",
+          meaning: "Hi/Hello",
+          example: "Ciao! Come stai?",
+          pronunciation: "chow",
+        },
+        // Thematic
+        {
+          main: "thematic",
+          sub: "food-drinks",
+          lang: "italian",
+          img: "https://via.placeholder.com/80",
+          transliteration: "Pane",
+          meaning: "Bread",
+          example: "Il pane è buono.",
+          pronunciation: "pa-ne",
+        },
+
+        // RUSSIAN
+        // Basic
+        {
+          main: "basic",
+          sub: "greetings",
+          lang: "russian",
+          img: "https://via.placeholder.com/80",
+          transliteration: "Привет",
+          meaning: "Hi",
+          example: "Привет! Как дела?",
+          pronunciation: "priv-yet",
+        },
+        // Thematic
+        {
+          main: "thematic",
+          sub: "food-drinks",
+          lang: "russian",
+          img: "https://via.placeholder.com/80",
+          transliteration: "хлеб",
+          meaning: "Bread",
+          example: "Хлеб свежий.",
+          pronunciation: "khleb",
+        },
+
+        // SPANISH
+        // Basic
+        {
+          main: "basic",
+          sub: "greetings",
+          lang: "spanish",
+          img: "https://via.placeholder.com/80",
+          transliteration: "Hola",
+          meaning: "Hello",
+          example: "¡Hola! ¿Cómo estás?",
+          pronunciation: "o-la",
+        },
+        // Thematic
+        {
+          main: "thematic",
+          sub: "food-drinks",
+          lang: "spanish",
+          img: "https://via.placeholder.com/80",
+          transliteration: "Pan",
+          meaning: "Bread",
+          example: "El pan está caliente.",
+          pronunciation: "pan",
+        },
+
+        // MANDARIN
+        // Basic
+        {
+          main: "basic",
+          sub: "greetings",
+          lang: "mandarin",
+          img: "https://via.placeholder.com/80",
+          transliteration: "你好",
+          meaning: "Hello",
+          example: "你好！你好吗？",
+          pronunciation: "nǐ hǎo",
+        },
+        // Thematic
+        {
+          main: "thematic",
+          sub: "days-months",
+          lang: "mandarin",
+          img: "https://via.placeholder.com/80",
+          transliteration: "星期一",
+          meaning: "Monday",
+          example: "星期一我有课。",
+          pronunciation: "xīng qī yī",
+        },
+
+        // KOREAN
+        // Basic
+        {
+          main: "basic",
+          sub: "greetings",
+          lang: "korean",
+          img: "https://via.placeholder.com/80",
+          transliteration: "안녕하세요",
+          meaning: "Hello",
+          example: "안녕하세요! 잘 지내세요?",
+          pronunciation: "ann-yeong-ha-se-yo",
+        },
+        // Thematic
+        {
+          main: "thematic",
+          sub: "food-drinks",
+          lang: "korean",
+          img: "https://via.placeholder.com/80",
+          transliteration: "빵",
+          meaning: "Bread",
+          example: "빵이 맛있어요.",
+          pronunciation: "ppang",
+        },
+
+        // PORTUGUESE
+        // Basic
+        {
+          main: "basic",
+          sub: "greetings",
+          lang: "portuguese",
+          img: "https://via.placeholder.com/80",
+          transliteration: "Olá",
+          meaning: "Hello",
+          example: "Olá! Como você está?",
+          pronunciation: "o-la",
+        },
+        // Thematic
+        {
+          main: "thematic",
+          sub: "food-drinks",
+          lang: "portuguese",
+          img: "https://via.placeholder.com/80",
+          transliteration: "Pão",
+          meaning: "Bread",
+          example: "O pão está quente.",
+          pronunciation: "pow",
+        },
+
+        // HINDI
+        // Basic
+        {
+          main: "basic",
+          sub: "greetings",
+          lang: "hindi",
+          img: "https://via.placeholder.com/80",
+          transliteration: "नमस्ते",
+          meaning: "Hello",
+          example: "नमस्ते! आप कैसे हैं?",
+          pronunciation: "namaste",
+        },
+        // Thematic
+        {
+          main: "thematic",
+          sub: "food-drinks",
+          lang: "hindi",
+          img: "https://via.placeholder.com/80",
+          transliteration: "रोटी",
+          meaning: "Bread",
+          example: "रोटी ताज़ा है।",
+          pronunciation: "ro-ti",
+        },
+      ];
+
+      /* ---------------------------
+   State + references
+----------------------------*/
+      let currentLang = "turkish";
+      let currentMain = "functional";
+      let currentNested = {}; // store selected nested per main
+
+      const openMenuBtn = document.getElementById("openMenuBtn");
+      const menuOverlay = document.getElementById("menuOverlay");
+      const menuClose = document.getElementById("menuClose");
+      const menuClear = document.getElementById("menuClear");
+      const langGrid = document.getElementById("langGrid");
+      const catGrid = document.getElementById("catGrid");
+
+      const headerLinks = document.querySelectorAll("header a");
+      const mainSubButtons = document.querySelectorAll(".vocab-subbar button");
+      const nestedWraps = document.querySelectorAll(".nested-wrap");
+      const contents = document.querySelectorAll(".content");
+      const emptyHint = document.getElementById("emptyHint");
+
+      /* ---------------------------
+   Language + category lists (UI seeds)
+----------------------------*/
+      const languages = [
+        "turkish",
+        "arabic",
+        "japanese",
+        "vietnamese",
+        "french",
+        "german",
+        "italian",
+        "russian",
+        "spanish",
+        "mandarin",
+        "korean",
+        "portuguese",
+        "hindi",
+        "kazakh",
+      ];
+      const languageLabels = {
+        turkish: "Turkish",
+        arabic: "Arabic",
+        japanese: "Japanese",
+        vietnamese: "Vietnamese",
+        french: "French",
+        german: "German",
+        italian: "Italian",
+        russian: "Russian",
+        spanish: "Spanish",
+        mandarin: "Mandarin",
+        korean: "Korean",
+        portuguese: "Portuguese",
+        hindi: "Hindi",
+        kazakh: "Kazakh",
+      };
+
+      const categories = [
+        { id: "functional", label: "Functional" },
+        { id: "thematic", label: "Thematic" },
+        { id: "basic", label: "Basic" },
+        { id: "formal", label: "Formal" },
+      ];
+
+      /* ---------------------------
+   Utilities
+----------------------------*/
+      function escapeHtml(str) {
+        return String(str || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function createCardElement(item) {
+        const card = document.createElement("div");
+        card.className = "flip-card";
+        card.setAttribute("data-lang", item.lang || "");
+        card.innerHTML = `
+    <div class="flip-card-inner">
+      <div class="flip-card-front">
+        <img src="${
+          item.img || "https://via.placeholder.com/80"
+        }" alt="${escapeHtml(item.meaning || "")}">
+        <div class="transliteration">${escapeHtml(
+          item.transliteration || ""
+        )}</div>
+        <div class="meaning">${escapeHtml(item.meaning || "")}</div>
+      </div>
+      <div class="flip-card-back">
+        <div class="example">${escapeHtml(item.example || "")}</div>
+        <div class="pronunciation">${escapeHtml(item.pronunciation || "")}</div>
+      </div>
+    </div>
+  `;
+        return card;
+      }
+
+      /* ---------------------------
+   Generate cards into grids
+----------------------------*/
+      function generateCards() {
+        document
+          .querySelectorAll(".vocab-grid")
+          .forEach((g) => (g.innerHTML = ""));
+        vocabData.forEach((item) => {
+          const main = item.main || "";
+          const sub = item.sub || "";
+          const nestedId = main + (sub ? "-" + sub : "");
+          let grid = document.getElementById(nestedId);
+          if (!grid) {
+            grid = document.getElementById(main);
+          }
+          if (!grid) return;
+          grid.appendChild(createCardElement(item));
+        });
+        refreshVisibleCards();
+      }
+
+      /* ---------------------------
+   Visibility & filtering logic
+----------------------------*/
+      function refreshVisibleCards() {
+        const visibleGrids = Array.from(
+          document.querySelectorAll(".vocab-grid")
+        ).filter((g) => {
+          return (
+            g.offsetParent !== null && getComputedStyle(g).display !== "none"
+          );
+        });
+
+        let anyCardVisible = false;
+        visibleGrids.forEach((grid) => {
+          const cards = Array.from(grid.querySelectorAll(".flip-card"));
+          cards.forEach((card) => {
+            const lang = card.getAttribute("data-lang") || "";
+            if (lang === currentLang) {
+              card.style.display = "block";
+              anyCardVisible = true;
+            } else {
+              card.style.display = "none";
+            }
+          });
+        });
+
+        emptyHint.style.display = anyCardVisible ? "none" : "block";
+      }
+
+      /* ---------------------------
+   Section / main / nested control
+----------------------------*/
+      function showSection(sectionId) {
+        contents.forEach((c) => c.classList.remove("active"));
+        const section = document.getElementById(sectionId);
+        if (section) section.classList.add("active");
+        if (sectionId === "vocabulary") showMain(currentMain, false);
+      }
+
+      function showMain(main, manualTrigger = true) {
+        currentMain = main;
+        mainSubButtons.forEach((b) =>
+          b.classList.toggle("active", b.getAttribute("data-vocab") === main)
+        );
+
+        nestedWraps.forEach((w) => {
+          const pid = w.id;
+          if (pid.startsWith(main)) w.style.display = "block";
+          else w.style.display = "none";
+        });
+
+        const wrap = document.getElementById(main + "NestedWrap");
+        if (wrap) {
+          const firstBtn = wrap.querySelector(".nested-subbar button");
+          const stored =
+            currentNested[main] ||
+            (firstBtn && firstBtn.getAttribute("data-sub"));
+          if (stored) showNested(main, stored);
+        } else {
+          document
+            .querySelectorAll(".vocab-grid")
+            .forEach((g) => (g.style.display = "none"));
+          const mainGrid = document.getElementById(main);
+          if (mainGrid) mainGrid.style.display = "grid";
+        }
+        refreshVisibleCards();
+      }
+
+      function showNested(main, sub) {
+        currentNested[main] = sub;
+        const wrap = document.getElementById(main + "NestedWrap");
+        if (wrap) {
+          const buttons = wrap.querySelectorAll(".nested-subbar button");
+          buttons.forEach((b) =>
+            b.classList.toggle("active", b.getAttribute("data-sub") === sub)
+          );
+        }
+        document
+          .querySelectorAll(".vocab-grid")
+          .forEach((g) => (g.style.display = "none"));
+        const id = main + "-" + sub;
+        const el = document.getElementById(id);
+        if (el) el.style.display = "grid";
+        refreshVisibleCards();
+      }
+
+      /* ---------------------------
+   Menu overlay logic
+----------------------------*/
+      function buildMenuUI() {
+        // Languages
+        langGrid.innerHTML = "";
+        languages.forEach((l) => {
+          const card = document.createElement("div");
+          card.className = "lang-card";
+          card.dataset.lang = l;
+          card.tabIndex = 0;
+          card.innerHTML = `<div style="font-weight:800">${
+            languageLabels[l] || l
+          }</div>`;
+          card.classList.toggle("active", l === currentLang);
+          card.addEventListener("click", () => {
+            selectLanguage(l, true);
+          });
+          card.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              selectLanguage(l, true);
+            }
+          });
+          langGrid.appendChild(card);
+        });
+
+        // Categories
+        catGrid.innerHTML = "";
+        categories.forEach((c) => {
+          const cc = document.createElement("div");
+          cc.className = "cat-card";
+          cc.dataset.main = c.id;
+          cc.tabIndex = 0;
+          cc.textContent = c.label;
+          cc.classList.toggle("active", c.id === currentMain);
+          cc.addEventListener("click", () => {
+            selectCategory(c.id);
+          });
+          cc.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              selectCategory(c.id);
+            }
+          });
+          catGrid.appendChild(cc);
+        });
+      }
+
+      function openMenu() {
+        buildMenuUI();
+        menuOverlay.style.display = "flex";
+        menuOverlay.setAttribute("aria-hidden", "false");
+        document.body.style.overflow = "hidden";
+        setTimeout(() => {
+          const first = menuOverlay.querySelector(".lang-card");
+          if (first) first.focus();
+        }, 80);
+      }
+
+      function closeMenu() {
+        menuOverlay.style.display = "none";
+        menuOverlay.setAttribute("aria-hidden", "true");
+        document.body.style.overflow = "auto";
+        refreshVisibleCards();
+      }
+
+      function selectLanguage(lang, closeImmediately = false) {
+        currentLang = lang;
+        // update active classes in menu if present
+        menuOverlay
+          .querySelectorAll(".lang-card")
+          .forEach((c) =>
+            c.classList.toggle("active", c.dataset.lang === lang)
+          );
+        if (closeImmediately) closeMenu();
+        refreshVisibleCards();
+      }
+
+      function selectCategory(main) {
+        showMain(main);
+        menuOverlay
+          .querySelectorAll(".cat-card")
+          .forEach((c) =>
+            c.classList.toggle("active", c.dataset.main === main)
+          );
+        closeMenu();
+      }
+
+      // Reset button behavior
+      menuClear.addEventListener("click", () => {
+        currentLang = "turkish";
+        currentMain = "functional";
+        currentNested = {};
+        buildMenuUI();
+        showMain(currentMain);
+        refreshVisibleCards();
+      });
+      menuClear.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          menuClear.click();
+        }
+      });
+
+      /* ---------------------------
+   Wire events (header nav + subbars)
+----------------------------*/
+      openMenuBtn.addEventListener("click", openMenu);
+      menuClose.addEventListener("click", closeMenu);
+      menuClose.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          menuClose.click();
+        }
+      });
+
+      menuOverlay.addEventListener("click", (e) => {
+        if (e.target === menuOverlay) closeMenu();
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && menuOverlay.style.display === "flex")
+          closeMenu();
+      });
+
+      headerLinks.forEach((link) => {
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          const target = link.getAttribute("data-target");
+          if (target) showSection(target);
+        });
+      });
+
+      mainSubButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const v = btn.getAttribute("data-vocab");
+          showMain(v);
+        });
+      });
+
+      document.querySelectorAll(".nested-subbar").forEach((nested) => {
+        nested.addEventListener("click", (e) => {
+          const btn = e.target.closest("button");
+          if (!btn) return;
+          const parentWrap = nested.parentElement;
+          const main = parentWrap.id.replace(/NestedWrap$/, "");
+          const sub = btn.getAttribute("data-sub");
+          if (!sub) return;
+          nested
+            .querySelectorAll("button")
+            .forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          showNested(main, sub);
+        });
+      });
+
+      /* ---------------------------
+   Small dashboard logic (date, quotes, faith, particles, progress)
+----------------------------*/
+      (function () {
+        const dateText = document.getElementById("dateText");
+        const quoteText = document.getElementById("quoteText");
+        const quoteAuthor = document.getElementById("quoteAuthor");
+        const faithMain = document.getElementById("faithMain");
+        const faithSub = document.getElementById("faithSub");
+        const streakCount = document.getElementById("streakCount");
+        const xpCount = document.getElementById("xpCount");
+
+        // Date — locale-aware (user in Indonesia assumed)
+        function renderDate() {
+          const now = new Date();
+          const opts = {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          };
+          dateText.textContent = now.toLocaleDateString("id-ID", opts);
+        }
+        renderDate();
+
+        // Quotes pool (short, respectful to faith)
+        const quotes = [
+          {
+            t: "Knowledge without action is like a tree without fruit.",
+            a: "Ibn Majah (adapted)",
+          },
+          {
+            t: "Small consistent deeds outweigh sporadic grandeur.",
+            a: "— Reminder",
+          },
+          {
+            t: "Control the moment; the moment controls your life.",
+            a: "— Discipline",
+          },
+          { t: "Seek knowledge, then act. Act, then perfect.", a: "— Baba" },
+        ];
+        function showQuote(i) {
+          const q = quotes[i % quotes.length];
+          quoteText.textContent = "“" + q.t + "”";
+          quoteAuthor.textContent = q.a;
+        }
+        showQuote(Math.floor(Math.random() * quotes.length));
+
+        // Faith reminders pool
+        const faiths = [
+          {
+            main: "يَا أَيُّهَا الَّذِينَ آمَنُوا تَقَوْا اللَّهَ",
+            sub: "Remember your purpose — a small sincere act today beats grand plans postponed.",
+          },
+          {
+            main: "اقْرَأْ بِاسْمِ رَبِّكَ",
+            sub: "Take one new word and reflect on its meaning for 5 minutes.",
+          },
+          {
+            main: "وَاذْكُرُوا اللَّهَ",
+            sub: "Breathe, make a quick dua, and return to work with calm focus.",
+          },
+        ];
+        let faithIndex = 0;
+        function showFaith(i) {
+          faithIndex = i % faiths.length;
+          faithMain.textContent = faiths[faithIndex].main;
+          faithSub.textContent = faiths[faithIndex].sub;
+        }
+        showFaith(0);
+
+        // Particles (subtle energy)
+        function makeParticles(count = 6) {
+          const container = document.getElementById("homeDashboard");
+          for (let i = 0; i < count; i++) {
+            const p = document.createElement("div");
+            p.className = "particle";
+            p.style.left = Math.random() * 92 + 2 + "%";
+            p.style.top = Math.random() * 92 + 2 + "%";
+            p.style.width = 6 + Math.random() * 8 + "px";
+            p.style.height = p.style.width;
+            p.style.opacity = (0.03 + Math.random() * 0.1).toString();
+            p.style.animationDuration = 6 + Math.random() * 6 + "s";
+            container.appendChild(p);
+            // remove after a while to prevent DOM bloat
+            setTimeout(() => {
+              try {
+                p.remove();
+              } catch (e) {}
+            }, 23000);
+          }
+        }
+        makeParticles(8);
+        // regenerate occasionally for a living background
+        setInterval(() => makeParticles(4), 10000);
+
+        // Progress tracking (simple localStorage)
+        const STORAGE_KEY = "vocab_progress_v1";
+        function loadProgress() {
+          try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (!raw) return { streak: 0, xp: 0, last: null };
+            return JSON.parse(raw);
+          } catch (e) {
+            return { streak: 0, xp: 0, last: null };
+          }
+        }
+        function saveProgress(p) {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(p));
+        }
+
+        let prog = loadProgress();
+        function renderProgress() {
+          streakCount.textContent = prog.streak || 0;
+          xpCount.textContent = (prog.xp || 0) + " pts";
+        }
+        renderProgress();
+
+        // Completing a faith action increments xp and optionally streak based on date
+        document
+          .getElementById("listenDuaBtn")
+          .addEventListener("click", () => {
+            const today = new Date().toDateString();
+            if (prog.last !== today) {
+              prog.streak = (prog.streak || 0) + 1;
+              prog.last = today;
+            }
+            prog.xp = (prog.xp || 0) + 5;
+            saveProgress(prog);
+            renderProgress();
+            const b = document.getElementById("listenDuaBtn");
+            b.disabled = true;
+            b.textContent = "Done";
+            setTimeout(() => {
+              b.disabled = false;
+              b.textContent = "Mark Dua";
+            }, 1200);
+          });
+
+        document
+          .getElementById("nextFaithBtn")
+          .addEventListener("click", () => showFaith(faithIndex + 1));
+
+        // Add small XP action
+        document
+          .getElementById("addProgressBtn")
+          .addEventListener("click", () => {
+            prog.xp = (prog.xp || 0) + 1;
+            saveProgress(prog);
+            renderProgress();
+          });
+
+        document
+          .getElementById("resetProgressBtn")
+          .addEventListener("click", () => {
+            prog = { streak: 0, xp: 0, last: null };
+            saveProgress(prog);
+            renderProgress();
+          });
+
+        // Quote click to cycle
+        document
+          .getElementById("quotePanel")
+          .addEventListener("click", () =>
+            showQuote(Math.floor(Math.random() * quotes.length))
+          );
+
+        // Date updates at midnight (lightweight)
+        setInterval(() => {
+          renderDate();
+        }, 1000 * 60 * 30);
+
+        // helper: update the visible UI on load
+        renderProgress();
+      })();
+
+      /* ---------------------------
+   Intro logic (cinematic white fade)
+----------------------------*/
+      (function setupIntro() {
+        const overlay = document.getElementById("introOverlay");
+        const circle = document.getElementById("introCircle");
+        const btn = document.getElementById("continueIntroBtn");
+        let finished = false;
+
+        overlay.style.opacity = "1";
+        overlay.setAttribute("aria-hidden", "false");
+        document.body.style.overflow = "hidden";
+
+        function finishIntro() {
+          if (finished) return;
+          finished = true;
+          btn.disabled = true;
+
+          // expand circle and fade — cinematic white fill
+          circle.style.animation = "none";
+          circle.style.transition =
+            "transform 1s cubic-bezier(.2,.9,.3,1), opacity 1s ease";
+          circle.style.transform = "scale(30)";
+          circle.style.opacity = "0";
+
+          // change overlay background to white so expansion looks like a clean white fill
+          overlay.style.transition =
+            "background 1s ease, opacity 1s ease, visibility 1s";
+          overlay.style.background = "#ffffff";
+          overlay.style.opacity = "1";
+
+          // slightly delay fade so white fill feels natural and cinematic
+          setTimeout(() => {
+            overlay.style.opacity = "0";
+          }, 160);
+
+          setTimeout(() => {
+            overlay.style.visibility = "hidden";
+            overlay.setAttribute("aria-hidden", "true");
+            document.body.style.background = "var(--bg)";
+            document.body.style.overflow = "auto";
+            window.dispatchEvent(new Event("resize"));
+            cleanup();
+          }, 1100);
+        }
+
+        function onTap(e) {
+          e.preventDefault();
+          finishIntro();
+        }
+        function onKey(e) {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            finishIntro();
+          }
+        }
+
+        function cleanup() {
+          try {
+            btn.removeEventListener("click", onTap);
+          } catch (e) {}
+          try {
+            document.removeEventListener("keydown", onKey);
+          } catch (e) {}
+          showSection("home");
+          refreshVisibleCards();
+        }
+
+        btn.addEventListener("click", onTap, { passive: false });
+        document.addEventListener("keydown", onKey);
+      })();
+
+      /* ---------------------------
+   Initial boot
+----------------------------*/
+      buildMenuUI(); // prepare menu UI (so selectLanguage can update UI if needed)
+      generateCards(); // populate grids
+      showSection("home");
+      showMain(currentMain);
+      selectLanguage(currentLang, false); // apply language filter (menu stays closed)
+    </script>
+  </body>
+</html>
